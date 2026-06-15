@@ -1,0 +1,8 @@
+h1{
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 5px;
+  font-family: "Courier New", Courier, monospace;
+  background: linear-gradient(90deg,#1d428a,#fdb927);
+  padding: 10px;
+}

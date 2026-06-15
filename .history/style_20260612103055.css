@@ -1,0 +1,16 @@
+body{
+    padding: 0px;
+}
+h1{
+  text-align: center;
+  font-size: 2rem;
+  font-family: "Courier New", Courier, monospace;
+  color : #fdb927;
+  background-color: #552503;
+  padding: 30px;
+
+}
+.selection{
+    text-align: center;
+    display: flex;
+}
