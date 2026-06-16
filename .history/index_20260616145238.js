@@ -2,11 +2,17 @@ import {playersData,seasonData} from "./scripts/utils.js";
 import { drawVisualization1 } from "./scripts/visualization1.js";
 import { drawVisualization2 } from "./scripts/visualization2.js";
 
-d3.csv("data/nba.csv").then(function(data){
+d3.csv("data/nba.csv",d3.autoType).then(function(data){
    
    data.forEach(element => {
+        element.player_name = +element.player_name
         element.player_id = +element.player_id
+        element.season_year = +element.season_year
+        element.game_id = +element.game_id
+        element.game_date = +element.game_date
         element.game_index = +element.game_index
+        element.home_away = +lement.home_away
+        element.opponent = +element.opponent
         element.pts = +element.pts
         element.fga = +element.fga
         element.min = +element.min
@@ -19,9 +25,12 @@ d3.csv("data/nba.csv").then(function(data){
         element.rolling_pts_avg_3 = +element.rolling_pts_avg_3
         element.baseline_pts = +element.baseline_pts
         element.pts_diff_from_baseline = +element.pts_diff_from_baseline 
+        element.performance_label = +element.performance_label
+        element.streak_type = +element.streak_type
         element.streak_length = +element.streak_length
    });
-  
+   
+
    playersData(data)
    seasonData(data)
    

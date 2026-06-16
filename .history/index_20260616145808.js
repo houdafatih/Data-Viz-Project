@@ -21,7 +21,8 @@ d3.csv("data/nba.csv").then(function(data){
         element.pts_diff_from_baseline = +element.pts_diff_from_baseline 
         element.streak_length = +element.streak_length
    });
-  
+   
+   console.log(data)
    playersData(data)
    seasonData(data)
    

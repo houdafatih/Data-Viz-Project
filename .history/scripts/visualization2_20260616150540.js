@@ -23,8 +23,9 @@ export function drawVisualization2(data,id,metric,eventT){
      
 }
 function createCanvas(new_data){
+    console.log(100 + new_data.length *20)
     return{
-        width : 600, height: 100 + new_data.length *16 , margin:{top: 20,right:100, bottom:60, left:50}
+        width : 600, height: 100 + new_data.length *20 , margin:{top: 20,right:100, bottom:60, left:50}
     }
 }
 

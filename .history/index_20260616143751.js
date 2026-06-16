@@ -2,26 +2,14 @@ import {playersData,seasonData} from "./scripts/utils.js";
 import { drawVisualization1 } from "./scripts/visualization1.js";
 import { drawVisualization2 } from "./scripts/visualization2.js";
 
-d3.csv("data/nba.csv").then(function(data){
-   
-   data.forEach(element => {
-        element.player_id = +element.player_id
-        element.game_index = +element.game_index
-        element.pts = +element.pts
-        element.fga = +element.fga
-        element.min = +element.min
-        element.fg_pct = +element.fg_pct
-        element.plus_minus = +element.plus_minus
-        element.next_pts = +element.next_pts
-        element.next_fga = +element.next_fga
-        element.next_min = +element.next_min
-        element.next_fg_pct = +element.next_fg_pct
-        element.rolling_pts_avg_3 = +element.rolling_pts_avg_3
-        element.baseline_pts = +element.baseline_pts
-        element.pts_diff_from_baseline = +element.pts_diff_from_baseline 
-        element.streak_length = +element.streak_length
-   });
-  
+d3.csv("data/nba.csv").then(function(dt){
+
+   const r = d3.autoType(dt)
+
+   r.season_year = dt.season_year
+   return r
+  }).then(function(data){
+
    playersData(data)
    seasonData(data)
    
@@ -46,7 +34,7 @@ function updateVisualizations(nba_data){
    
     let data_filter = nba_data.filter(d => d.player_name === player && d.season_year == season)
     drawVisualization1(data_filter,"#vizual1",metric)
-    
+
     if(eventT === "Select event type"){
         return
     }
