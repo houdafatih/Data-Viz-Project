@@ -64,9 +64,6 @@ text{
     border: 1px solid #ccc;
     padding: 10px;
     font-size: 15px;
-    visibility: hidden;
+    opacity: 0;
     pointer-events: none;
-}
-.line2{
-    stroke-width: 1px;
 }

@@ -77,13 +77,15 @@ function draw_Rows(svg,new_data,left,right,margin,r_height){
 
     const line_scale = d3.scaleLinear().domain([0,d3.max(new_data, d => Math.abs(d.difference))]).range([20,180])
    
-    rows.append("line").attr("x1",left+10).attr("class","line2")
+    rows.append("line").attr("x1",left+10)
     .attr("x2",d => { const l= line_scale(Math.abs(d.difference))
         return left+l
 
     })
     .attr("y1",35).attr("y2",35).attr("stroke","black").attr("stroke-dasharray","5 3")
+    .attr("stroke-width",1.5)
     .on("mouseover",function(event,d){
+        d3.select(this).attr("stroke-width",3)
         tooltip.style("visibility","visible").html(tooltipInformations2(d))
      })
      .on("mousemove",function(event){
@@ -91,6 +93,7 @@ function draw_Rows(svg,new_data,left,right,margin,r_height){
           .style("top",event.clientY-20+"px")
      })
      .on("mouseout",function(){
+         d3.select(this).attr("stroke-width",1.5)
         tooltip.style("visibility","hidden")
      })
 
@@ -173,8 +176,8 @@ function tooltipInformations2(data){
     return `<strong> Game n - Date: ${data.current_g["game_date"]} </strong><br>
             <strong> Game n - Opponent: ${data.current_g["opponent"]} </strong><br>
             <strong> Game n - Points: ${data.current_g["pts"]} </strong><br>
-            <strong> Game n+1 - Date: ${data.next_g["game_date"]} </strong><br>
-            <strong> Game n+1 - Opponent: ${data.next_g["opponent"]} </strong><br>
-            <strong> Game n+1 - Points: ${data.next_g["pts"]} </strong><br>
+            <strong> Game n+1 - Date: ${data.nextG["game_date"]} </strong><br>
+            <strong> Game n+1 - Opponent: ${data.nextG["opponent"]} </strong><br>
+            <strong> Game n+1 - Points: ${data.nextG["pts"]} </strong><br>
     `
 }

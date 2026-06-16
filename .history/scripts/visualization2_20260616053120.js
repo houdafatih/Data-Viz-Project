@@ -65,7 +65,6 @@ function draw_Header(svg,left,right){
 }
 
 function draw_Rows(svg,new_data,left,right,margin,r_height){
-    const tooltip = toolTip2(new_data)
 
     const rows = svg.selectAll(".response-row").data(new_data).enter()
      .append("g").attr("class","response-row")
@@ -77,22 +76,14 @@ function draw_Rows(svg,new_data,left,right,margin,r_height){
 
     const line_scale = d3.scaleLinear().domain([0,d3.max(new_data, d => Math.abs(d.difference))]).range([20,180])
    
-    rows.append("line").attr("x1",left+10).attr("class","line2")
+    //ight-10
+    rows.append("line").attr("x1",left+10)
     .attr("x2",d => { const l= line_scale(Math.abs(d.difference))
         return left+l
 
     })
     .attr("y1",35).attr("y2",35).attr("stroke","black").attr("stroke-dasharray","5 3")
-    .on("mouseover",function(event,d){
-        tooltip.style("visibility","visible").html(tooltipInformations2(d))
-     })
-     .on("mousemove",function(event){
-        tooltip.style("left",event.clientX+15+"px")
-          .style("top",event.clientY-20+"px")
-     })
-     .on("mouseout",function(){
-        tooltip.style("visibility","hidden")
-     })
+    .attr("stroke-width",1.5)
 
     rows.append("circle").attr("cx",left+10).attr("cy",35).attr("r",2).attr("fill","#fdb927")
     rows.append("circle").attr("cx",d => { const l= line_scale(Math.abs(d.difference))
@@ -127,8 +118,8 @@ function performance_filter(d,data,metric){
 
 function addSummaryCard(svg,new_data,eventT,canvas){
     
-    svg.append("text").attr("x",50).attr("y",canvas.height-50)
-    .attr("font-weight","bold").text(`Average change after ${eventT} games:`).attr("font-size","7px")
+    svg.append("text").attr("x",50).attr("y",canvas.height-40)
+    .attr("font-weight","bold").text(`Average change after ${eventT} games:`).attr("font-size","6px")
 
     const metrics_change = new_data.map(d => {
         const pts = d.current_g["next_pts"] - d.current_g["pts"]
@@ -138,43 +129,9 @@ function addSummaryCard(svg,new_data,eventT,canvas){
 
         return {"pts":pts,"fga":fga,"min":min,"fg_pct":fg_pct}
     })
-    
-    const means = [
-        {"avg":d3.mean(metrics_change,d => d.pts),"name":"PTS"},
-        {"avg":d3.mean(metrics_change,d => d.fga),"name":"FGA"},
-        {"avg":d3.mean(metrics_change,d => d.min),"name":"MIN"},
-        {"avg":d3.mean(metrics_change,d => d.fg_pct),"name":"FG%"}
-    ]
-    
-    means.forEach((element,i) => {
-        let position = canvas.margin.left+i*50
-        svg.append("text").attr("x",position).attr("y",canvas.height-30)
-        .attr("font-size","6px").attr("font-weight","bold")
-        .text(`${element.name} : `)   
-        svg.append("text").attr("x",position+20).attr("y",canvas.height-30)
-        .attr("font-size","6px")
-        .text(`${element.avg.toFixed(2)}`)
- 
-    });
-    
-}
 
-function toolTip2(){
-    let tooltip = d3.select("body").select(".tooltip2")
-    if(tooltip.empty()){
-        tooltip = d3.select("body").append("div").attr("class","tooltip2")
-    }
+    console.log(d3.mean(metrics_change["pts"]))
 
-    return tooltip
-}
-
-function tooltipInformations2(data){
-    console.log(data)
-    return `<strong> Game n - Date: ${data.current_g["game_date"]} </strong><br>
-            <strong> Game n - Opponent: ${data.current_g["opponent"]} </strong><br>
-            <strong> Game n - Points: ${data.current_g["pts"]} </strong><br>
-            <strong> Game n+1 - Date: ${data.next_g["game_date"]} </strong><br>
-            <strong> Game n+1 - Opponent: ${data.next_g["opponent"]} </strong><br>
-            <strong> Game n+1 - Points: ${data.next_g["pts"]} </strong><br>
-    `
+    svg.append("text").attr("x",canvas.margin.left).attr("y",canvas.height)
+    
 }

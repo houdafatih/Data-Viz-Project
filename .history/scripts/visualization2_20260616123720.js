@@ -65,8 +65,7 @@ function draw_Header(svg,left,right){
 }
 
 function draw_Rows(svg,new_data,left,right,margin,r_height){
-    const tooltip = toolTip2(new_data)
-
+    const tooltip = tooltipInformations(new_data)
     const rows = svg.selectAll(".response-row").data(new_data).enter()
      .append("g").attr("class","response-row")
      .attr("transform",(d,j) => `translate(0,${margin.top+j*r_height})`)
@@ -77,21 +76,26 @@ function draw_Rows(svg,new_data,left,right,margin,r_height){
 
     const line_scale = d3.scaleLinear().domain([0,d3.max(new_data, d => Math.abs(d.difference))]).range([20,180])
    
-    rows.append("line").attr("x1",left+10).attr("class","line2")
+    //ight-10
+    rows.append("line").attr("x1",left+10)
     .attr("x2",d => { const l= line_scale(Math.abs(d.difference))
         return left+l
 
     })
     .attr("y1",35).attr("y2",35).attr("stroke","black").attr("stroke-dasharray","5 3")
+    .attr("stroke-width",1.5)
     .on("mouseover",function(event,d){
-        tooltip.style("visibility","visible").html(tooltipInformations2(d))
+        d3.select(this).attr("r",3)
+        tooltip.style("opacity",1).html(tooltipInformations(d))
      })
      .on("mousemove",function(event){
         tooltip.style("left",event.clientX+15+"px")
           .style("top",event.clientY-20+"px")
      })
      .on("mouseout",function(){
-        tooltip.style("visibility","hidden")
+        d3.select(this)
+        .attr("r",2)
+        tooltip.style("opacity",0)
      })
 
     rows.append("circle").attr("cx",left+10).attr("cy",35).attr("r",2).attr("fill","#fdb927")
@@ -158,23 +162,7 @@ function addSummaryCard(svg,new_data,eventT,canvas){
     });
     
 }
-
-function toolTip2(){
-    let tooltip = d3.select("body").select(".tooltip2")
-    if(tooltip.empty()){
-        tooltip = d3.select("body").append("div").attr("class","tooltip2")
-    }
-
-    return tooltip
-}
-
-function tooltipInformations2(data){
-    console.log(data)
-    return `<strong> Game n - Date: ${data.current_g["game_date"]} </strong><br>
-            <strong> Game n - Opponent: ${data.current_g["opponent"]} </strong><br>
-            <strong> Game n - Points: ${data.current_g["pts"]} </strong><br>
-            <strong> Game n+1 - Date: ${data.next_g["game_date"]} </strong><br>
-            <strong> Game n+1 - Opponent: ${data.next_g["opponent"]} </strong><br>
-            <strong> Game n+1 - Points: ${data.next_g["pts"]} </strong><br>
-    `
+function tooltipInformations(data){
+    console.log("here")
+    return `<strong> Game ${data.current_g} </strong><br>`
 }

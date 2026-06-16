@@ -83,7 +83,9 @@ function draw_Rows(svg,new_data,left,right,margin,r_height){
 
     })
     .attr("y1",35).attr("y2",35).attr("stroke","black").attr("stroke-dasharray","5 3")
+    .attr("stroke-width",2)
     .on("mouseover",function(event,d){
+        d3.select(this).attr("stroke-width",3)
         tooltip.style("visibility","visible").html(tooltipInformations2(d))
      })
      .on("mousemove",function(event){
@@ -91,6 +93,7 @@ function draw_Rows(svg,new_data,left,right,margin,r_height){
           .style("top",event.clientY-20+"px")
      })
      .on("mouseout",function(){
+         d3.select(this).attr("stroke-width",2)
         tooltip.style("visibility","hidden")
      })
 
