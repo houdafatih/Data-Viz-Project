@@ -10,7 +10,7 @@ export function drawVisualization4(data,id,xMetric,yMetric,contextMetric,showTre
     .sort((a,b) => a.game_index - b.game_index)
 
     if(clean_data.length === 0) {
-        clearCanvas(id)
+        showNoData(id,"No game pairs match these context or metric settings.")
         return
     }
 
@@ -35,6 +35,10 @@ function createCanvas(numFacets){
 
 function clearCanvas(id){
     d3.select(id).html("")
+}
+
+function showNoData(id,message){
+    d3.select(id).html(`<p class="empty-message">${message}</p>`)
 }
 
 function addSvg(id,canvas){

@@ -1,6 +1,6 @@
 export function drawVisualization1(data,id,metric,selectedGames,onSelectGame){
      if(data.length === 0) {
-        clearCanvas(id)
+        showNoData(id,"No games available for this player and season.")
         return
     }
      const canvas = createCanvas()
@@ -28,6 +28,10 @@ function createCanvas(){
 
 function clearCanvas(id){
     d3.select(id).html("")
+}
+
+function showNoData(id,message){
+    d3.select(id).html(`<p class="empty-message">${message}</p>`)
 }
 
 function addSvg(id,canvas){

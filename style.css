@@ -54,6 +54,17 @@ h3{
     font-size: 14px;
     line-height: 1.4;
 }
+.empty-message{
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 15px;
+    border: 1px dashed #552503;
+    border-radius: 5px;
+    background: #fff8e6;
+    color: #552503;
+    font-family: Arial, Helvetica, sans-serif;
+    text-align: center;
+}
 .tick{
     font-size: 5px;
 }

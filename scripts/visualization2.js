@@ -1,6 +1,6 @@
 export function drawVisualization2(data,id,metric,eventT,selectedGames){
     if(data.length === 0) {
-        clearCanvas(id)
+        showNoData(id,"No games available for this player and season.")
         return
     }
     
@@ -18,7 +18,7 @@ export function drawVisualization2(data,id,metric,eventT,selectedGames){
      }
 
      if(new_data.length === 0){
-        clearCanvas(id)
+        showNoData(id,"No game pairs match this response filter. Try selecting All.")
         return
      }
     
@@ -41,6 +41,10 @@ function createCanvas(new_data){
 
 function clearCanvas(id){
     d3.select(id).html("")
+}
+
+function showNoData(id,message){
+    d3.select(id).html(`<p class="empty-message">${message}</p>`)
 }
 
 function addSvg(id,canvas){

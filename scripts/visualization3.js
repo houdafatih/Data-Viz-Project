@@ -6,7 +6,7 @@ const colors_labels = [
 ]
 export function drawVisualization3(data,id,metric,threshold,selectedGames,onSelectStreak){
      if(data.length === 0) {
-        clearCanvas(id)
+        showNoData(id,"No games available for this player and season.")
         return
     }
    
@@ -43,6 +43,10 @@ function createCanvas(num_lines,streaks){
 
 function clearCanvas(id){
     d3.select(id).html("")
+}
+
+function showNoData(id,message){
+    d3.select(id).html(`<p class="empty-message">${message}</p>`)
 }
 
 function addSvg(id,canvas){
