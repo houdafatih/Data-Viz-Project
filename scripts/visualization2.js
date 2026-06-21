@@ -1,14 +1,25 @@
-export function drawVisualization2(data,id,metric,eventT){
+export function drawVisualization2(data,id,metric,eventT,selectedGames){
     if(data.length === 0) {
         clearCanvas(id)
         return
     }
     
      
-     let new_data = createData(data,metric)
+     const all_pairs = createData(data,metric)
+     let new_data = all_pairs
     
      if(eventT !== "all"){
         new_data = new_data.filter(d => performance_filter(d.current_g,data,metric) === eventT)
+     }
+
+     const selectedPair = all_pairs.find(d => selectedGames && selectedGames.pairStart === d.game_idx)
+     if(selectedPair && !new_data.some(d => d.game_idx === selectedPair.game_idx)){
+        new_data = [...new_data,selectedPair].sort((a,b) => a.eventN - b.eventN)
+     }
+
+     if(new_data.length === 0){
+        clearCanvas(id)
+        return
      }
     
      const canvas = createCanvas(new_data)
@@ -18,7 +29,7 @@ export function drawVisualization2(data,id,metric,eventT){
      const svg = addSvg(id,canvas)
 
      draw_Header(svg,200,400)
-     draw_Rows(svg,new_data,200,400,canvas.margin,15)
+     draw_Rows(svg,new_data,200,400,canvas.margin,15,selectedGames)
      addSummaryCard(svg,new_data,eventT,canvas)
      
 }
@@ -64,12 +75,17 @@ function draw_Header(svg,left,right){
 
 }
 
-function draw_Rows(svg,new_data,left,right,margin,r_height){
+function draw_Rows(svg,new_data,left,right,margin,r_height,selectedGames){
     const tooltip = toolTip2(new_data)
 
     const rows = svg.selectAll(".response-row").data(new_data).enter()
      .append("g").attr("class","response-row")
      .attr("transform",(d,j) => `translate(0,${margin.top+j*r_height})`)
+
+    rows.append("rect").attr("x",45).attr("y",25)
+    .attr("width",500).attr("height",14)
+    .attr("fill",d => isSelectedRow(selectedGames,d) ? "#fdb927" : "transparent")
+    .attr("opacity",0.35)
 
     rows.append("text").attr("x",100).attr("y",35).text(d =>`Event ${d.eventN}` )
      .attr("font-size","7px").attr("font-weight","bold")
@@ -94,17 +110,27 @@ function draw_Rows(svg,new_data,left,right,margin,r_height){
         tooltip.style("visibility","hidden")
      })
 
-    rows.append("circle").attr("cx",left+10).attr("cy",35).attr("r",2).attr("fill","#fdb927")
+    rows.append("circle").attr("cx",left+10).attr("cy",35)
+    .attr("r",d => isSelectedRow(selectedGames,d) ? 4 : 2)
+    .attr("fill","#fdb927").attr("stroke",d => isSelectedRow(selectedGames,d) ? "#000" : "none")
     rows.append("circle").attr("cx",d => { const l= line_scale(Math.abs(d.difference))
         return left+l
 
-    }).attr("cy",35).attr("r",2).attr("fill","#fdb927")
+    }).attr("cy",35)
+    .attr("r",d => isSelectedRow(selectedGames,d) ? 4 : 2)
+    .attr("fill","#fdb927").attr("stroke",d => isSelectedRow(selectedGames,d) ? "#000" : "none")
 
     rows.append("text").attr("x",right).attr("y",35).text(d => d.next_v).attr("font-size","6px")
 
     rows.append("text").attr("x",right+50).attr("y",35).text(d => difference_label(d.difference))
     .attr("font-size","6px").attr("fill","#552503").attr("font-weight","bold")
     
+}
+
+function isSelectedRow(selectedGames,row){
+    if(!selectedGames || !selectedGames.indexes || selectedGames.indexes.length === 0) return false
+    if(selectedGames.pairStart !== null) return selectedGames.pairStart === row.game_idx
+    return selectedGames.indexes.includes(row.game_idx) || selectedGames.indexes.includes(row.nextg_index)
 }
 
 function difference_label(diff){

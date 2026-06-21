@@ -4,7 +4,7 @@ const colors_labels = [
     {lab:"Normal games",color:"#fff"},
     {lab:"Cold games",color:"#4575b4"}
 ]
-export function drawVisualization3(data,id,metric,threshold){
+export function drawVisualization3(data,id,metric,threshold,selectedGames,onSelectStreak){
      if(data.length === 0) {
         clearCanvas(id)
         return
@@ -27,11 +27,11 @@ export function drawVisualization3(data,id,metric,threshold){
 
      addLablels(svg,baseline_classif.classification,canvas)
 
-     addCells(svg,baseline_classif.classification,canvas,scale)
+     addCells(svg,baseline_classif.classification,canvas,scale,selectedGames)
 
      addLegends(svg,canvas)
 
-     addStreaks(svg,canvas,streaks,baseline_classif.classification)
+     addStreaks(svg,canvas,streaks,baseline_classif.classification,selectedGames,onSelectStreak)
      
 }
 
@@ -105,11 +105,15 @@ function addLablels(svg, classification,canvas){
     .attr("text-anchor","middle").attr("font-size","6px").text(d => `G${d.g_num}`)
 }
 
-function addCells(svg, classification,canvas,scale){
+function addCells(svg, classification,canvas,scale,selectedGames){
     const num = 30
     svg.selectAll(".game-cell").data(classification).enter().append("rect").attr("class","game-cell")
-    .attr("x",(d,j) => canvas.margin.left + (j%num) * 18).attr("y",(d,j) => 85 + (Math.floor(j/num))*40).attr("width",5).attr("height",5)
-    .attr("fill",d => scale(d.perf_label)).attr("stroke","#222").attr("stroke-width",0.5)
+    .attr("x",(d,j) => canvas.margin.left + (j%num) * 18).attr("y",(d,j) => 85 + (Math.floor(j/num))*40)
+    .attr("width",d => isSelectedGame(selectedGames,d.game_index) ? 8 : 5)
+    .attr("height",d => isSelectedGame(selectedGames,d.game_index) ? 8 : 5)
+    .attr("fill",d => scale(d.perf_label))
+    .attr("stroke",d => isSelectedGame(selectedGames,d.game_index) ? "#000" : "#222")
+    .attr("stroke-width",d => isSelectedGame(selectedGames,d.game_index) ? 1.2 : 0.5)
 }
 
 function addLegends(svg,canvas){
@@ -121,7 +125,7 @@ function addLegends(svg,canvas){
     .attr("x",canvas.width - 170).attr("y",(d,j) => 80 + j * 25).attr("font-size","8px").text(d => d.lab)
 }
 
-function addStreaks(svg,canvas,streaks,data){
+function addStreaks(svg,canvas,streaks,data,selectedGames,onSelectStreak){
     svg.append("text").attr("x",canvas.margin.left).attr("y",200).attr("font-size","8px").attr("font-weight","bold")
     .text("Detected Streaks")
 
@@ -134,10 +138,22 @@ function addStreaks(svg,canvas,streaks,data){
     svg.selectAll(".streak-list").data(streaks).enter().append("text").attr("class",".streak-list")
     .attr("x",canvas.margin.left).attr("y",(d,j) => 215 + j * 20).attr("font-size","8px")
     .text(d => `${d.type} streak : G${d.start} - G${d.end}, length is ${d.length}`)
+    .attr("fill",d => isSelectedStreak(selectedGames,d) ? "#d94801" : "#000")
+    .attr("font-weight",d => isSelectedStreak(selectedGames,d) ? "bold" : "normal")
     .attr("cursor","pointer").style("user-select","none")
     .on("click",function(event,d){
+        if(onSelectStreak) onSelectStreak(d)
         summaryPanelStreak(svg,d,data)
     })
+}
+
+function isSelectedStreak(selectedGames,streak){
+    if(!selectedGames || !selectedGames.indexes || selectedGames.indexes.length === 0) return false
+    return selectedGames.indexes.includes(streak.start) && selectedGames.indexes.includes(streak.end)
+}
+
+function isSelectedGame(selectedGames,gameIndex){
+    return selectedGames && selectedGames.indexes && selectedGames.indexes.includes(gameIndex)
 }
 
 function streakDetection(data){

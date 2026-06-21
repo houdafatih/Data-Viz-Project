@@ -1,4 +1,4 @@
-export function drawVisualization1(data,id,metric){
+export function drawVisualization1(data,id,metric,selectedGames,onSelectGame){
      if(data.length === 0) {
         clearCanvas(id)
         return
@@ -14,7 +14,7 @@ export function drawVisualization1(data,id,metric){
      addMetricLine(svg,sc,data,metric)
      addAverageLine(svg,sc,data,metric)
      addBaselineLine(svg,sc,data,metric)
-     addPoints(svg,sc,data,metric)
+     addPoints(svg,sc,data,metric,selectedGames,onSelectGame)
      addLabels(svg,canvas,metric)
      
      addLegends(svg,canvas)
@@ -80,33 +80,46 @@ function addBaselineLine(svg,scales,data,metric){
     .attr("stroke","#777").attr("stroke-dasharray","6 4")
 }
 
-function addPoints(svg,scales,data,metric){
+function addPoints(svg,scales,data,metric,selectedGames,onSelectGame){
     const tooltip = toolTip()
 
     svg.selectAll("circle").data(data).enter()
      .append("circle").attr("class","game-pt")
      .attr("cx", d => scales.xScale(d.game_index))
      .attr("cy",d => scales.yScale(d[metric]))
-     .attr("r",2).attr("fill",d => colorPoint(d.performance_label))
+     .attr("r",d => isSelectedGame(selectedGames,d.game_index) ? 4 : 2)
+     .attr("fill",d => colorPoint(d.performance_label))
+     .attr("stroke",d => isSelectedGame(selectedGames,d.game_index) ? "#000" : "none")
+     .attr("stroke-width",1)
+     .attr("opacity",d => hasSelection(selectedGames) && !isSelectedGame(selectedGames,d.game_index) ? 0.35 : 1)
+     .attr("cursor","pointer")
      .on("mouseover",function(event,d){
-        d3.select(this).attr("r",3)
+        d3.select(this).attr("r",5)
         tooltip.style("opacity",1).html(tooltipInformations(d))
      })
      .on("mousemove",function(event){
         tooltip.style("left",event.clientX+15+"px")
           .style("top",event.clientY-20+"px")
      })
-     .on("mouseout",function(){
+     .on("mouseout",function(event,d){
         d3.select(this)
-        .attr("r",2)
+        .attr("r",isSelectedGame(selectedGames,d.game_index) ? 4 : 2)
         tooltip.style("opacity",0)
      })
-     //.on("click",function(event,d){
-       // highlightGameandNextGame(svg,data,d)
-    // })
+     .on("click",function(event,d){
+        if(onSelectGame) onSelectGame(d)
+     })
 
 
      
+}
+
+function hasSelection(selectedGames){
+    return selectedGames && selectedGames.indexes && selectedGames.indexes.length > 0
+}
+
+function isSelectedGame(selectedGames,gameIndex){
+    return hasSelection(selectedGames) && selectedGames.indexes.includes(gameIndex)
 }
 
 function colorPoint(perf){

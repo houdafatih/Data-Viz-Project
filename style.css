@@ -26,6 +26,16 @@ select option:hover{
     background-color: #fdb927;
 }
 
+.toggle-option{
+    display: inline-block;
+    margin: 10px;
+    padding: 15px 30px;
+    border-radius: 5px;
+    background: #fdb927;
+    color:#552503;
+    font-family: "Courier New", Courier, monospace;
+}
+
     
 
 h3{

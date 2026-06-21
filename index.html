@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
    <head>
     <meta charset="UTF-8"/>
     <title>Beyond The Box Score</title>
@@ -63,6 +63,29 @@
 
 
      <h3>Visualization 4 — Context Impact View</h3>
+     <div class="selection">
+        <select id="contextSelectV4">
+            <option selected disabled>Select context</option>
+            <option value="home_away">Home vs Away</option>
+            <option value="wl">Win vs Loss</option>
+            <option value="plus_minus_group">Plus/Minus Group</option>
+            <option value="result_streak_type">Team Streak Type</option>
+        </select>
+        <select id="xMetricSelectV4">
+            <option selected disabled>Select x-axis</option>
+            <option value="pts_diff_from_baseline">PTS Difference from Baseline</option>
+            <option value="plus_minus">Plus/Minus</option>
+        </select>
+        <select id="yMetricSelectV4">
+            <option selected disabled>Select y-axis</option>
+            <option value="next_pts_diff_from_baseline">Next PTS Difference from Baseline</option>
+            <option value="next_fga_change">Next FGA Change</option>
+        </select>
+        <label class="toggle-option">
+            <input type="checkbox" id="trendlineToggleV4" checked>
+            Trendline
+        </label>
+     </div>
      <div id="vizual4"></div>
 
   </body>
