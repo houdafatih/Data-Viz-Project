@@ -1,9 +1,3 @@
-
-const colors_labels = [
-    {lab:"Hot games",color:"#d73027"},
-    {lab:"Normal games",color:"#fff"},
-    {lab:"Cold games",color:"#4575b4"}
-]
 export function drawVisualization3(data,id,metric,threshold){
      if(data.length === 0) {
         clearCanvas(id)
@@ -15,7 +9,7 @@ export function drawVisualization3(data,id,metric,threshold){
      
      const svg = addSvg(id,canvas)
 
-     const baseline_classif = calculateBaselineAndClassifyGames(data,metric,threshold)
+     const baseline_classif = calculateBaselineAndClassifyGames(data,metric)
      const scale = colorScale()
 
      addTitle(svg,canvas,baseline_classif.baseline,metric)
@@ -23,14 +17,12 @@ export function drawVisualization3(data,id,metric,threshold){
      addLablels(svg,baseline_classif.classification,canvas)
 
      addCells(svg,baseline_classif.classification,canvas,scale)
-
-     addLegends(svg,canvas)
      
 }
 
 function createCanvas(){
     return{
-        width : 800, height: 200, margin:{top: 20,right:100, bottom:60, left:50}
+        width : 600, height: 200, margin:{top: 20,right:100, bottom:60, left:50}
     }
 }
 
@@ -42,22 +34,15 @@ function addSvg(id,canvas){
     return d3.select(id).append("svg").attr("viewBox",`0 0 ${canvas.width} ${canvas.height}`)
 }
 
-function convertThreshold(threshold){
-    if(threshold == "medium") return 5
-    else if (threshold == "loose") return 3
-    else return 8
-}
-
-function calculateBaselineAndClassifyGames(data,metric,threshold)
+function calculateBaselineAndClassifyGames(data,metric)
 {
   const baseline = d3.mean(data,dt=> dt[metric])
-  const thre_shold = convertThreshold(threshold)
 
   const classification = data.map((d,j)=> {
     let perf_label = ""
-    if(d[metric] > baseline + thre_shold){
+    if(d[metric] > baseline + 5){
         perf_label = "hot"
-    }else if(d[metric] < baseline - thre_shold){
+    }else if(d[metric] < baseline - 5){
         perf_label = "cold"
     }
     else perf_label = "normal"
@@ -92,25 +77,14 @@ function addTitle(svg,canvas,baseline,metric){
 }
 
 function addLablels(svg, classification,canvas){
-    const num = 30
+    const num = 20
     svg.selectAll(".game-label").data(classification).enter().append("text").attr("class","game-label")
-    .attr("x",(d,j) => canvas.margin.left + (j%num) * 18 + 10 /2).attr("y",(d,j) => 75 + (Math.floor(j/num))*40)
-    .attr("text-anchor","middle").attr("font-size","6px").text(d => `G${d.g_num}`)
+    .attr("x",(d,j) => canvas.margin.left + j * 15 + 10 /2).attr("y",75).attr("text-anchor","middle")
+    .attr("font-size","6px").text(d => `G${d.g_num}`)
 }
 
 function addCells(svg, classification,canvas,scale){
-    const num = 30
     svg.selectAll(".game-cell").data(classification).enter().append("rect").attr("class","game-cell")
-    .attr("x",(d,j) => canvas.margin.left + (j%num) * 18).attr("y",(d,j) => 85 + (Math.floor(j/num))*40).attr("width",5).attr("height",5)
-    .attr("fill",d => scale(d.perf_label)).attr("stroke","#222").attr("stroke-width",0.5)
+    .attr("x",(d,j) => canvas.margin.left + j * 15).attr("y",85).attr("width",7).attr("height",7)
+    .attr("fill",d => scale(d.perf_label)).attr("stroke","#222").attr("stroke-width",1)
 }
-
-function addLegends(svg,canvas){
-    svg.selectAll(".legend-rec").data(colors_labels).enter().append("rect").attr("class",".legend-rec")
-    .attr("x",canvas.width - 100).attr("y",(d,j) => 75 + j * 25)
-    .attr("width",6).attr("height",6).attr("fill",d => d.color).attr("stroke","#222")
-
-    svg.selectAll(".legend-tex").data(colors_labels).enter().append("text").attr("class",".legend-tex")
-    .attr("x",canvas.width - 170).attr("y",(d,j) => 80 + j * 25).attr("font-size","8px").text(d => d.lab)
-}
-

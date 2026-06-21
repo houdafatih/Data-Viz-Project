@@ -15,7 +15,7 @@ export function drawVisualization3(data,id,metric,threshold){
      
      const svg = addSvg(id,canvas)
 
-     const baseline_classif = calculateBaselineAndClassifyGames(data,metric,threshold)
+     const baseline_classif = calculateBaselineAndClassifyGames(data,metric)
      const scale = colorScale()
 
      addTitle(svg,canvas,baseline_classif.baseline,metric)
@@ -42,22 +42,15 @@ function addSvg(id,canvas){
     return d3.select(id).append("svg").attr("viewBox",`0 0 ${canvas.width} ${canvas.height}`)
 }
 
-function convertThreshold(threshold){
-    if(threshold == "medium") return 5
-    else if (threshold == "loose") return 3
-    else return 8
-}
-
-function calculateBaselineAndClassifyGames(data,metric,threshold)
+function calculateBaselineAndClassifyGames(data,metric)
 {
   const baseline = d3.mean(data,dt=> dt[metric])
-  const thre_shold = convertThreshold(threshold)
 
   const classification = data.map((d,j)=> {
     let perf_label = ""
-    if(d[metric] > baseline + thre_shold){
+    if(d[metric] > baseline + 5){
         perf_label = "hot"
-    }else if(d[metric] < baseline - thre_shold){
+    }else if(d[metric] < baseline - 5){
         perf_label = "cold"
     }
     else perf_label = "normal"
@@ -108,9 +101,8 @@ function addCells(svg, classification,canvas,scale){
 function addLegends(svg,canvas){
     svg.selectAll(".legend-rec").data(colors_labels).enter().append("rect").attr("class",".legend-rec")
     .attr("x",canvas.width - 100).attr("y",(d,j) => 75 + j * 25)
-    .attr("width",6).attr("height",6).attr("fill",d => d.color).attr("stroke","#222")
+    .attr("width",5).attr("height",5).attr("fill",d => d.color).attr("stroke","#222")
 
     svg.selectAll(".legend-tex").data(colors_labels).enter().append("text").attr("class",".legend-tex")
-    .attr("x",canvas.width - 170).attr("y",(d,j) => 80 + j * 25).attr("font-size","8px").text(d => d.lab)
+    .attr("x",canvas.width - 170).attr("y",(d,j) => 78 + j * 25).attr("font-size","7px").text(d => d.lab)
 }
-

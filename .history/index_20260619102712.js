@@ -1,7 +1,6 @@
 import {playersData,seasonData} from "./scripts/utils.js";
 import { drawVisualization1 } from "./scripts/visualization1.js";
 import { drawVisualization2 } from "./scripts/visualization2.js";
-import { drawVisualization3 } from "./scripts/visualization3.js";
 
 d3.csv("data/nba.csv").then(function(data){
    
@@ -35,11 +34,6 @@ d3.csv("data/nba.csv").then(function(data){
    d3.select("#metricSelect").property("value","pts")
 
    d3.select("#performanceSelect").property("value","hot")
-
-   d3.select("#metricSelectV3").property("value","pts")
-
-   d3.select("#thresholdSelect").property("value","medium")
-
    updateVisualizations(nba_data)
 
 
@@ -47,8 +41,6 @@ d3.csv("data/nba.csv").then(function(data){
    d3.select("#seasonSelect").on("change",() => updateVisualizations(nba_data))
    d3.select("#metricSelect").on("change",() => updateVisualizations(nba_data))
    d3.select("#performanceSelect").on("change",() => updateVisualizations(nba_data))
-   d3.select("#metricSelectV3").on("change",() => updateVisualizations(nba_data))
-   d3.select("#thresholdSelect").on("change",() => updateVisualizations(nba_data))
 
 })
 
@@ -56,11 +48,7 @@ function updateVisualizations(nba_data){
     const player = d3.select("#playerSelect").property("value")
     const season = d3.select("#seasonSelect").property("value")
     const metric = d3.select("#metricSelect").property("value")
-
     const eventT = d3.select("#performanceSelect").property("value")
-
-    const metricv3 = d3.select("#metricSelectV3").property("value")
-    const threshold =d3.select("#thresholdSelect").property("value")
 
     if(player === "Select a Player" || season === "Select a Season" || metric === "Select a metric"){
         return
@@ -74,8 +62,4 @@ function updateVisualizations(nba_data){
     }
     drawVisualization2(data_filter,"#vizual2",metric,eventT)
 
-    if(metricv3 === "Select a metric" || threshold === "Select a threshold"){
-        return
-    }
-    drawVisualization3(data_filter,"#vizual3",metricv3,threshold)
 }

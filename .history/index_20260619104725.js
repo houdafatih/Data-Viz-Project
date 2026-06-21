@@ -38,7 +38,7 @@ d3.csv("data/nba.csv").then(function(data){
 
    d3.select("#metricSelectV3").property("value","pts")
 
-   d3.select("#thresholdSelect").property("value","medium")
+   d3.select("#thresholdSelect").property("value","meduim")
 
    updateVisualizations(nba_data)
 

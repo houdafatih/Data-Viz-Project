@@ -51,13 +51,13 @@ function convertThreshold(threshold){
 function calculateBaselineAndClassifyGames(data,metric,threshold)
 {
   const baseline = d3.mean(data,dt=> dt[metric])
-  const thre_shold = convertThreshold(threshold)
+  const threshold = convertThreshold(threshold)
 
   const classification = data.map((d,j)=> {
     let perf_label = ""
-    if(d[metric] > baseline + thre_shold){
+    if(d[metric] > baseline + threshold){
         perf_label = "hot"
-    }else if(d[metric] < baseline - thre_shold){
+    }else if(d[metric] < baseline - threshold){
         perf_label = "cold"
     }
     else perf_label = "normal"
