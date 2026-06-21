@@ -169,7 +169,7 @@ function toolTip2(){
 }
 
 function tooltipInformations2(data){
-    console.log(data)
+
     return `<strong> Game n - Date: ${data.current_g["game_date"]} </strong><br>
             <strong> Game n - Opponent: ${data.current_g["opponent"]} </strong><br>
             <strong> Game n - Points: ${data.current_g["pts"]} </strong><br>

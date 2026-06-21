@@ -9,13 +9,18 @@ export function drawVisualization3(data,id,metric,threshold){
         clearCanvas(id)
         return
     }
-     const canvas = createCanvas()
+   
+     const baseline_classif = calculateBaselineAndClassifyGames(data,metric,threshold)
+     const streaks = streakDetection(baseline_classif.classification)
+     const num_lines = baseline_classif.classification.length/30
+
+     const canvas = createCanvas(num_lines,streaks.length)
 
      clearCanvas(id)
      
      const svg = addSvg(id,canvas)
 
-     const baseline_classif = calculateBaselineAndClassifyGames(data,metric,threshold)
+     
      const scale = colorScale()
 
      addTitle(svg,canvas,baseline_classif.baseline,metric)
@@ -25,12 +30,14 @@ export function drawVisualization3(data,id,metric,threshold){
      addCells(svg,baseline_classif.classification,canvas,scale)
 
      addLegends(svg,canvas)
+
+     addStreaks(svg,canvas,streaks,baseline_classif.classification)
      
 }
 
-function createCanvas(){
+function createCanvas(num_lines,streaks){
     return{
-        width : 800, height: 200, margin:{top: 20,right:100, bottom:60, left:50}
+        width : 800, height: 100 * num_lines + 20 * streaks, margin:{top: 20,right:100, bottom:60, left:50}
     }
 }
 
@@ -114,3 +121,97 @@ function addLegends(svg,canvas){
     .attr("x",canvas.width - 170).attr("y",(d,j) => 80 + j * 25).attr("font-size","8px").text(d => d.lab)
 }
 
+function addStreaks(svg,canvas,streaks,data){
+    svg.append("text").attr("x",canvas.margin.left).attr("y",200).attr("font-size","8px").attr("font-weight","bold")
+    .text("Detected Streaks")
+
+    if(streaks.length == 0){
+        svg.append("text").attr("x",canvas.margin.left).attr("y",210).attr("font-size","8px")
+         .text(".... None a streak is detected")
+        return
+    }
+
+    svg.selectAll(".streak-list").data(streaks).enter().append("text").attr("class",".streak-list")
+    .attr("x",canvas.margin.left).attr("y",(d,j) => 215 + j * 20).attr("font-size","8px")
+    .text(d => `${d.type} streak : G${d.start} - G${d.end}, length is ${d.length}`)
+    .attr("cursor","pointer").style("user-select","none")
+    .on("click",function(event,d){
+        summaryPanelStreak(svg,d,data)
+    })
+}
+
+function streakDetection(data){
+    let streak_list = []
+    let type_current = null
+    let start = 0
+
+    data.forEach((element,j) => {
+        if(element.perf_label === "normal"){
+            if(type_current !== null){
+                streak_list = pushStreak(start,j-1,streak_list,type_current,data)
+                type_current = null
+            }
+            return
+        }
+
+        if(type_current === null){
+            type_current = element.perf_label
+            start = j
+        }
+        else if(element.perf_label !== type_current){
+            streak_list = pushStreak(start,j-1,streak_list,type_current,data)
+            type_current = element.perf_label
+            start = j
+        }
+
+        if(j === data.length-1 && type_current !== null ){
+            streak_list = pushStreak(start,j,streak_list,type_current,data)
+        }
+    });
+    return streak_list
+
+}
+
+function pushStreak(start,end,streak_list,type_c,data){
+    const l = end - start + 1
+
+    if(l >= 2){
+        streak_list.push({
+            type:type_c,
+            start:data[start].g_num,
+            end : data[end].g_num,
+            length:l
+        })
+    }
+
+    return streak_list
+}
+
+function summaryPanelStreak(svg,streak,data){
+    
+    let games_list = data.filter(dt => dt.g_num >= streak.start && dt.g_num <= streak.end)
+
+    const mean_pts = d3.mean(games_list,g=>g.pts).toFixed(2)
+    const mean_min = d3.mean(games_list,g=>g.min).toFixed(2)
+    const mean_fg = d3.mean(games_list,g=>g.fg_pct).toFixed(2)
+    
+    const next_g_diff = games_list[games_list.length-1].next_pts
+
+    d3.selectAll(".summary").remove()
+
+    const element = d3.select("body").append("div").attr("class","summary")
+
+    element.html(
+        `<strong>Selected ${streak.type} streak : </strong>G${streak.start} - G${streak.end}<br>
+         <p><strong>Length : </strong>${streak.length}</p>
+         <p><strong>Average Points : </strong>${mean_pts}</p>
+         <p><strong>Average Minutes : </strong>${mean_min}</p>
+         <p><strong>Average FG% : </strong>${mean_fg}</p>
+         <p><strong>Next game difference : </strong>${next_g_diff}</p>
+         <button id="summary-close">Close</button>`
+    )
+    d3.select("#summary-close").on("click",function(){
+        element.remove()
+    })
+
+}
