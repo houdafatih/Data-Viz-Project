@@ -28,9 +28,11 @@
      </div>
      
      <h3>Visualization 1 — Season Momentum Timeline</h3>
+     <p class="viz-description">Read left to right: each dot is one game. Higher dots mean a stronger game for the selected metric. Orange points are hot games, blue points are cold games, and the dashed line shows the player's usual level.</p>
      <div id="vizual1"></div>
 
      <h3>Visualization 2 — Next-Game Response View</h3>
+     <p class="viz-description">Each row compares one game with the next game. Use it to see whether the selected metric went up, down, or stayed about the same after hot, cold, or normal games.</p>
      <div class="selection">
         <select id="performanceSelect">
             <option selected disabled>Select event type</option>
@@ -43,6 +45,7 @@
      <div id="vizual2"></div>
 
      <h3>Visualization 3 — Hot/Cold Streak Explorer</h3>
+     <p class="viz-description">Each small square is one game. Red means above the player's baseline, blue means below it, and white means normal. The streak list shows runs of repeated hot or cold games.</p>
      <div class="selection">
         <select id="metricSelectV3">
             <option selected disabled>Select a metric</option>
@@ -63,6 +66,7 @@
 
 
      <h3>Visualization 4 — Context Impact View</h3>
+     <p class="viz-description">Each dot is a game and its next game. The x-axis shows what happened in game n, and the y-axis shows the next-game response. Separate panels let you compare contexts like home/away or win/loss.</p>
      <div class="selection">
         <select id="contextSelectV4">
             <option selected disabled>Select context</option>

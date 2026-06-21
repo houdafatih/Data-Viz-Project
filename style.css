@@ -43,6 +43,17 @@ h3{
     font-family: "Courier New", Courier, monospace;
     text-align: center;
 }
+.viz-description{
+    max-width: 760px;
+    margin: -5px auto 15px auto;
+    padding: 10px 15px;
+    border-left: 4px solid #fdb927;
+    background: wheat;
+    color: #552503;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    line-height: 1.4;
+}
 .tick{
     font-size: 5px;
 }
