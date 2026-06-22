@@ -98,7 +98,7 @@ function updateVisualizations(nba_data){
     if(eventT === "Select event type"){
         return
     }
-    drawVisualization2(data_filter,"#vizual2",metric,eventT,activeSelection)
+    drawVisualization2(data_filter,"#vizual2",metric,eventT,activeSelection,d => selectGamePair(d.game_idx,"v2",nba_data))
 
     if(metricv3 === "Select a metric" || threshold === "Select a threshold"){
         return

@@ -1,4 +1,4 @@
-export function drawVisualization2(data,id,metric,eventT,selectedGames){
+export function drawVisualization2(data,id,metric,eventT,selectedGames,onSelectPair){
     if(data.length === 0) {
         showNoData(id,"No games available for this player and season.")
         return
@@ -29,7 +29,7 @@ export function drawVisualization2(data,id,metric,eventT,selectedGames){
      const svg = addSvg(id,canvas)
 
      draw_Header(svg,200,400)
-     draw_Rows(svg,new_data,200,400,canvas.margin,15,selectedGames)
+     draw_Rows(svg,new_data,200,400,canvas.margin,15,selectedGames,onSelectPair)
      addSummaryCard(svg,new_data,eventT,canvas)
      
 }
@@ -79,17 +79,22 @@ function draw_Header(svg,left,right){
 
 }
 
-function draw_Rows(svg,new_data,left,right,margin,r_height,selectedGames){
+function draw_Rows(svg,new_data,left,right,margin,r_height,selectedGames,onSelectPair){
     const tooltip = toolTip2(new_data)
 
     const rows = svg.selectAll(".response-row").data(new_data).enter()
      .append("g").attr("class","response-row")
      .attr("transform",(d,j) => `translate(0,${margin.top+j*r_height})`)
+     .attr("cursor","pointer")
+     .on("click",function(event,d){
+        if(onSelectPair) onSelectPair(d)
+     })
 
     rows.append("rect").attr("x",45).attr("y",25)
     .attr("width",500).attr("height",14)
     .attr("fill",d => isSelectedRow(selectedGames,d) ? "#fdb927" : "transparent")
     .attr("opacity",0.35)
+    .attr("pointer-events","all")
 
     rows.append("text").attr("x",100).attr("y",35).text(d =>`Event ${d.eventN}` )
      .attr("font-size","7px").attr("font-weight","bold")
@@ -102,7 +107,10 @@ function draw_Rows(svg,new_data,left,right,margin,r_height,selectedGames){
         return left+l
 
     })
-    .attr("y1",35).attr("y2",35).attr("stroke","black").attr("stroke-dasharray","5 3")
+    .attr("y1",35).attr("y2",35)
+    .attr("stroke",d => isSelectedRow(selectedGames,d) ? "#552503" : "black")
+    .attr("stroke-width",d => isSelectedRow(selectedGames,d) ? 2 : 1)
+    .attr("stroke-dasharray","5 3")
     .on("mouseover",function(event,d){
         tooltip.style("visibility","visible").html(tooltipInformations2(d))
      })
