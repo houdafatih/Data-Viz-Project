@@ -86,11 +86,37 @@ function draw_Rows(svg,new_data,left,right,margin,r_height,selectedGames,onSelec
      .append("g").attr("class","response-row")
      .attr("transform",(d,j) => `translate(0,${margin.top+j*r_height})`)
      .attr("cursor","pointer")
+     .on("mouseenter",function(event,d){
+        d3.select(this).select(".row-bg")
+        .attr("fill","#fdb927")
+        .attr("opacity",isSelectedRow(selectedGames,d) ? 0.35 : 0.18)
+
+        d3.select(this).select(".response-line")
+        .attr("stroke","#552503")
+        .attr("stroke-width",isSelectedRow(selectedGames,d) ? 2.4 : 1.6)
+
+        d3.select(this).selectAll(".response-dot")
+        .attr("r",isSelectedRow(selectedGames,d) ? 4.5 : 3)
+        .attr("stroke","#552503")
+     })
+     .on("mouseleave",function(event,d){
+        d3.select(this).select(".row-bg")
+        .attr("fill",isSelectedRow(selectedGames,d) ? "#fdb927" : "transparent")
+        .attr("opacity",0.35)
+
+        d3.select(this).select(".response-line")
+        .attr("stroke",isSelectedRow(selectedGames,d) ? "#552503" : "black")
+        .attr("stroke-width",isSelectedRow(selectedGames,d) ? 2 : 1)
+
+        d3.select(this).selectAll(".response-dot")
+        .attr("r",isSelectedRow(selectedGames,d) ? 4 : 2)
+        .attr("stroke",isSelectedRow(selectedGames,d) ? "#000" : "none")
+     })
      .on("click",function(event,d){
         if(onSelectPair) onSelectPair(d)
      })
 
-    rows.append("rect").attr("x",45).attr("y",25)
+    rows.append("rect").attr("class","row-bg").attr("x",45).attr("y",25)
     .attr("width",500).attr("height",14)
     .attr("fill",d => isSelectedRow(selectedGames,d) ? "#fdb927" : "transparent")
     .attr("opacity",0.35)
@@ -102,7 +128,7 @@ function draw_Rows(svg,new_data,left,right,margin,r_height,selectedGames,onSelec
 
     const line_scale = d3.scaleLinear().domain([0,d3.max(new_data, d => Math.abs(d.difference))]).range([20,180])
    
-    rows.append("line").attr("x1",left+10).attr("class","line2")
+    rows.append("line").attr("x1",left+10).attr("class","line2 response-line")
     .attr("x2",d => { const l= line_scale(Math.abs(d.difference))
         return left+l
 
@@ -122,10 +148,10 @@ function draw_Rows(svg,new_data,left,right,margin,r_height,selectedGames,onSelec
         tooltip.style("visibility","hidden")
      })
 
-    rows.append("circle").attr("cx",left+10).attr("cy",35)
+    rows.append("circle").attr("class","response-dot").attr("cx",left+10).attr("cy",35)
     .attr("r",d => isSelectedRow(selectedGames,d) ? 4 : 2)
     .attr("fill","#fdb927").attr("stroke",d => isSelectedRow(selectedGames,d) ? "#000" : "none")
-    rows.append("circle").attr("cx",d => { const l= line_scale(Math.abs(d.difference))
+    rows.append("circle").attr("class","response-dot").attr("cx",d => { const l= line_scale(Math.abs(d.difference))
         return left+l
 
     }).attr("cy",35)
