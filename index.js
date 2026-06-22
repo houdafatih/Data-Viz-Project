@@ -34,7 +34,7 @@ d3.csv("data/nba.csv").then(function(data){
    
    const nba_data = data
    const initialSeason = nba_data[0].season_year
-   const initialPlayers = playersData(nba_data,initialSeason)
+   const initialPlayers = playersData(nba_data)
 
    d3.select("#playerSelect").property("value",initialPlayers[0])
 
@@ -59,7 +59,6 @@ d3.csv("data/nba.csv").then(function(data){
 
    d3.select("#playerSelect").on("change",() => resetSelection(nba_data))
    d3.select("#seasonSelect").on("change",() => {
-        updatePlayersForSeason(nba_data)
         resetSelection(nba_data)
    })
    d3.select("#metricSelect").on("change",() => resetSelection(nba_data))
@@ -148,17 +147,6 @@ function selectionFor(player,season){
     }
 
     return emptySelection()
-}
-
-function updatePlayersForSeason(nba_data){
-    const season = d3.select("#seasonSelect").property("value")
-    const player = d3.select("#playerSelect").property("value")
-    const availablePlayers = playersData(nba_data,season)
-    const hasPlayerSeason = nba_data.some(d => d.player_name === player && d.season_year == season)
-
-    if(!hasPlayerSeason && availablePlayers.length > 0){
-        d3.select("#playerSelect").property("value",availablePlayers[0])
-    }
 }
 
 function numberValue(value){
