@@ -1,244 +1,380 @@
-export function drawVisualization2(data,id,metric,eventT,selectedGames,onSelectPair){
-    if(data.length === 0) {
-        showNoData(id,"No games available for this player and season.")
-        return
-    }
-    
-     
-     const all_pairs = createData(data,metric)
-     let new_data = all_pairs
-    
-     if(eventT !== "all"){
-        new_data = new_data.filter(d => performance_filter(d.current_g,data,metric) === eventT)
-     }
+export function drawVisualization2(
+  data,
+  id,
+  metric,
+  eventT,
+  selectedGames,
+  onSelectPair,
+) {
+  if (data.length === 0) {
+    showNoData(id, "No games available for this player and season.");
+    return;
+  }
 
-     const selectedPair = all_pairs.find(d => selectedGames && selectedGames.pairStart === d.game_idx)
-     if(selectedPair && !new_data.some(d => d.game_idx === selectedPair.game_idx)){
-        new_data = [...new_data,selectedPair].sort((a,b) => a.eventN - b.eventN)
-     }
+  const all_pairs = createData(data, metric);
+  let new_data = all_pairs;
 
-     if(new_data.length === 0){
-        showNoData(id,"No game pairs match this response filter. Try selecting All.")
-        return
-     }
-    
-     const canvas = createCanvas(new_data)
+  if (eventT !== "all") {
+    new_data = new_data.filter(
+      (d) => performance_filter(d.current_g, data, metric) === eventT,
+    );
+  }
 
-     clearCanvas(id)
-     
-     const svg = addSvg(id,canvas)
+  const selectedPair = all_pairs.find(
+    (d) => selectedGames && selectedGames.pairStart === d.game_idx,
+  );
+  if (
+    selectedPair &&
+    !new_data.some((d) => d.game_idx === selectedPair.game_idx)
+  ) {
+    new_data = [...new_data, selectedPair].sort((a, b) => a.eventN - b.eventN);
+  }
 
-     draw_Header(svg,200,400)
-     draw_Rows(svg,new_data,200,400,canvas.margin,15,selectedGames,onSelectPair)
-     addSummaryCard(svg,new_data,eventT,canvas)
-     
+  if (new_data.length === 0) {
+    showNoData(
+      id,
+      "No game pairs match this response filter. Try selecting All.",
+    );
+    return;
+  }
+
+  const canvas = createCanvas(new_data);
+
+  clearCanvas(id);
+
+  const svg = addSvg(id, canvas);
+
+  draw_Header(svg, 200, 400);
+  draw_Rows(
+    svg,
+    new_data,
+    200,
+    400,
+    canvas.margin,
+    15,
+    selectedGames,
+    onSelectPair,
+  );
+  addSummaryCard(svg, new_data, eventT, canvas);
 }
-function createCanvas(new_data){
-    return{
-        width : 600, height: 100 + new_data.length *16 , margin:{top: 20,right:100, bottom:60, left:50}
-    }
-}
-
-function clearCanvas(id){
-    d3.select(id).html("")
-}
-
-function showNoData(id,message){
-    d3.select(id).html(`<p class="empty-message">${message}</p>`)
-}
-
-function addSvg(id,canvas){
-    return d3.select(id).append("svg").attr("viewBox",`0 0 ${canvas.width} ${canvas.height}`)
-}
-
-function createData(data,metric){
-   const new_data = data.slice().sort((a,b) => a.game_index - b.game_index)
-
-   return new_data.slice(0,-1).map((d,j) => {
-      const nextG = new_data[j+1]
-
-      return {
-        eventN: j+1,
-        game_idx : d.game_index,
-        nextg_index : nextG.game_index,
-        current_v: d[metric],
-        next_v : nextG[metric],
-        difference : nextG[metric] - d[metric],
-        current_g : d,
-        next_g : nextG
-      }
-   })
+function createCanvas(new_data) {
+  return {
+    width: 600,
+    height: 100 + new_data.length * 16,
+    margin: { top: 20, right: 100, bottom: 60, left: 50 },
+  };
 }
 
-function draw_Header(svg,left,right){
-    svg.append("text").attr("x",left).attr("y",30)
-    .attr("text-anchor","middle").attr("font-weight","bold").attr("font-size","8px").text("Game n")
-
-    svg.append("text").attr("x",right).attr("y",30)
-    .attr("text-anchor","middle").attr("font-weight","bold").attr("font-size","8px").text("Game n+1")
-
+function clearCanvas(id) {
+  d3.select(id).html("");
 }
 
-function draw_Rows(svg,new_data,left,right,margin,r_height,selectedGames,onSelectPair){
-    const tooltip = toolTip2(new_data)
+function showNoData(id, message) {
+  d3.select(id).html(`<p class="empty-message">${message}</p>`);
+}
 
-    const rows = svg.selectAll(".response-row").data(new_data).enter()
-     .append("g").attr("class","response-row")
-     .attr("transform",(d,j) => `translate(0,${margin.top+j*r_height})`)
-     .attr("cursor","pointer")
-     .on("mouseenter",function(event,d){
-        d3.select(this).select(".row-bg")
-        .attr("fill","#fdb927")
-        .attr("opacity",isSelectedRow(selectedGames,d) ? 0.35 : 0.18)
+function addSvg(id, canvas) {
+  return d3
+    .select(id)
+    .append("svg")
+    .attr("viewBox", `0 0 ${canvas.width} ${canvas.height}`);
+}
 
-        d3.select(this).select(".response-line")
-        .attr("stroke","#552503")
-        .attr("stroke-width",isSelectedRow(selectedGames,d) ? 2.4 : 1.6)
+function createData(data, metric) {
+  const new_data = data.slice().sort((a, b) => a.game_index - b.game_index);
 
-        d3.select(this).selectAll(".response-dot")
-        .attr("r",isSelectedRow(selectedGames,d) ? 4.5 : 3)
-        .attr("stroke","#552503")
-     })
-     .on("mouseleave",function(event,d){
-        d3.select(this).select(".row-bg")
-        .attr("fill",isSelectedRow(selectedGames,d) ? "#fdb927" : "transparent")
-        .attr("opacity",0.35)
+  return new_data.slice(0, -1).map((d, j) => {
+    const nextG = new_data[j + 1];
 
-        d3.select(this).select(".response-line")
-        .attr("stroke",isSelectedRow(selectedGames,d) ? "#552503" : "black")
-        .attr("stroke-width",isSelectedRow(selectedGames,d) ? 2 : 1)
+    return {
+      eventN: j + 1,
+      game_idx: d.game_index,
+      nextg_index: nextG.game_index,
+      current_v: d[metric],
+      next_v: nextG[metric],
+      difference: nextG[metric] - d[metric],
+      current_g: d,
+      next_g: nextG,
+    };
+  });
+}
 
-        d3.select(this).selectAll(".response-dot")
-        .attr("r",isSelectedRow(selectedGames,d) ? 4 : 2)
-        .attr("stroke",isSelectedRow(selectedGames,d) ? "#000" : "none")
-     })
-     .on("click",function(event,d){
-        if(onSelectPair) onSelectPair(d)
-     })
+function draw_Header(svg, left, right) {
+  svg
+    .append("text")
+    .attr("x", left)
+    .attr("y", 30)
+    .attr("text-anchor", "middle")
+    .attr("font-weight", "bold")
+    .attr("font-size", "8px")
+    .text("Game n");
 
-    rows.append("rect").attr("class","row-bg").attr("x",45).attr("y",25)
-    .attr("width",500).attr("height",14)
-    .attr("fill",d => isSelectedRow(selectedGames,d) ? "#fdb927" : "transparent")
-    .attr("opacity",0.35)
-    .attr("pointer-events","all")
+  svg
+    .append("text")
+    .attr("x", right)
+    .attr("y", 30)
+    .attr("text-anchor", "middle")
+    .attr("font-weight", "bold")
+    .attr("font-size", "8px")
+    .text("Game n+1");
+}
 
-    rows.append("text").attr("x",100).attr("y",35).text(d =>`Event ${d.eventN}` )
-     .attr("font-size","7px").attr("font-weight","bold")
-    rows.append("text").attr("x",left).attr("y",35).attr("text-anchor","end").text(d => d.current_v).attr("font-size","6px")
+function draw_Rows(
+  svg,
+  new_data,
+  left,
+  right,
+  margin,
+  r_height,
+  selectedGames,
+  onSelectPair,
+) {
+  const tooltip = toolTip2(new_data);
 
-    const line_scale = d3.scaleLinear().domain([0,d3.max(new_data, d => Math.abs(d.difference))]).range([20,180])
-   
-    rows.append("line").attr("x1",left+10).attr("class","line2 response-line")
-    .attr("x2",d => { const l= line_scale(Math.abs(d.difference))
-        return left+l
+  const rows = svg
+    .selectAll(".response-row")
+    .data(new_data)
+    .enter()
+    .append("g")
+    .attr("class", "response-row")
+    .attr("transform", (d, j) => `translate(0,${margin.top + j * r_height})`)
+    .attr("cursor", "pointer")
+    .on("mouseenter", function (event, d) {
+      d3.select(this)
+        .select(".row-bg")
+        .attr("fill", "#fdb927")
+        .attr("opacity", isSelectedRow(selectedGames, d) ? 0.35 : 0.18);
 
+      d3.select(this)
+        .select(".response-line")
+        .attr("stroke", "#552503")
+        .attr("stroke-width", isSelectedRow(selectedGames, d) ? 2.4 : 1.6);
+
+      d3.select(this)
+        .selectAll(".response-dot")
+        .attr("r", isSelectedRow(selectedGames, d) ? 4.5 : 3)
+        .attr("stroke", "#552503");
     })
-    .attr("y1",35).attr("y2",35)
-    .attr("stroke",d => isSelectedRow(selectedGames,d) ? "#552503" : "black")
-    .attr("stroke-width",d => isSelectedRow(selectedGames,d) ? 2 : 1)
-    .attr("stroke-dasharray","5 3")
-    .on("mouseover",function(event,d){
-        tooltip.style("visibility","visible").html(tooltipInformations2(d))
-     })
-     .on("mousemove",function(event){
-        tooltip.style("left",event.clientX+15+"px")
-          .style("top",event.clientY-20+"px")
-     })
-     .on("mouseout",function(){
-        tooltip.style("visibility","hidden")
-     })
+    .on("mouseleave", function (event, d) {
+      d3.select(this)
+        .select(".row-bg")
+        .attr(
+          "fill",
+          isSelectedRow(selectedGames, d) ? "#fdb927" : "transparent",
+        )
+        .attr("opacity", 0.35);
 
-    rows.append("circle").attr("class","response-dot").attr("cx",left+10).attr("cy",35)
-    .attr("r",d => isSelectedRow(selectedGames,d) ? 4 : 2)
-    .attr("fill","#fdb927").attr("stroke",d => isSelectedRow(selectedGames,d) ? "#000" : "none")
-    rows.append("circle").attr("class","response-dot").attr("cx",d => { const l= line_scale(Math.abs(d.difference))
-        return left+l
+      d3.select(this)
+        .select(".response-line")
+        .attr("stroke", isSelectedRow(selectedGames, d) ? "#552503" : "black")
+        .attr("stroke-width", isSelectedRow(selectedGames, d) ? 2 : 1);
 
-    }).attr("cy",35)
-    .attr("r",d => isSelectedRow(selectedGames,d) ? 4 : 2)
-    .attr("fill","#fdb927").attr("stroke",d => isSelectedRow(selectedGames,d) ? "#000" : "none")
-
-    rows.append("text").attr("x",right).attr("y",35).text(d => d.next_v).attr("font-size","6px")
-
-    rows.append("text").attr("x",right+50).attr("y",35).text(d => difference_label(d.difference))
-    .attr("font-size","6px").attr("fill","#552503").attr("font-weight","bold")
-    
-}
-
-function isSelectedRow(selectedGames,row){
-    if(!selectedGames || !selectedGames.indexes || selectedGames.indexes.length === 0) return false
-    if(selectedGames.pairStart !== null) return selectedGames.pairStart === row.game_idx
-    return selectedGames.indexes.includes(row.game_idx) || selectedGames.indexes.includes(row.nextg_index)
-}
-
-function difference_label(diff){
-    if(diff > 1) return "increase"
-    if(diff < -1) return "decrease"
-    if(diff < 0) return "slightly decrease"
-    if(diff > 0) return "slightly increase"
-    return "stable"
-}
-
-function performance_filter(d,data,metric){
-   const bLine = d3.mean(data,dt => dt[metric])
-   const th = Math.abs(bLine) * 0.2
-   const dv = d[metric] - bLine
-
-   if(dv > th) return "hot"
-   if(dv < -th) return "cold"
-   return "normal"
-}
-
-function addSummaryCard(svg,new_data,eventT,canvas){
-    
-    svg.append("text").attr("x",50).attr("y",canvas.height-50)
-    .attr("font-weight","bold").text(`Average change after ${eventT} games:`).attr("font-size","7px")
-
-    const metrics_change = new_data.map(d => {
-        const pts = d.current_g["next_pts"] - d.current_g["pts"]
-        const fga = d.current_g["next_fga"] - d.current_g["fga"]
-        const min = d.current_g["next_min"] - d.current_g["min"]
-        const fg_pct = d.current_g["next_fg_pct"] - d.current_g["fg_pct"]
-
-        return {"pts":pts,"fga":fga,"min":min,"fg_pct":fg_pct}
+      d3.select(this)
+        .selectAll(".response-dot")
+        .attr("r", isSelectedRow(selectedGames, d) ? 4 : 2)
+        .attr("stroke", isSelectedRow(selectedGames, d) ? "#000" : "none");
     })
-    
-    const means = [
-        {"avg":d3.mean(metrics_change,d => d.pts),"name":"PTS"},
-        {"avg":d3.mean(metrics_change,d => d.fga),"name":"FGA"},
-        {"avg":d3.mean(metrics_change,d => d.min),"name":"MIN"},
-        {"avg":d3.mean(metrics_change,d => d.fg_pct),"name":"FG%"}
-    ]
-    
-    means.forEach((element,i) => {
-        let position = canvas.margin.left+i*50
-        svg.append("text").attr("x",position).attr("y",canvas.height-30)
-        .attr("font-size","6px").attr("font-weight","bold")
-        .text(`${element.name} : `)   
-        svg.append("text").attr("x",position+20).attr("y",canvas.height-30)
-        .attr("font-size","6px")
-        .text(`${element.avg.toFixed(2)}`)
- 
+    .on("click", function (event, d) {
+      if (onSelectPair) onSelectPair(d);
     });
-    
+
+  rows
+    .append("rect")
+    .attr("class", "row-bg")
+    .attr("x", 45)
+    .attr("y", 25)
+    .attr("width", 500)
+    .attr("height", 14)
+    .attr("fill", (d) =>
+      isSelectedRow(selectedGames, d) ? "#fdb927" : "transparent",
+    )
+    .attr("opacity", 0.35)
+    .attr("pointer-events", "all");
+
+  rows
+    .append("text")
+    .attr("x", 100)
+    .attr("y", 35)
+    .text((d) => `Event ${d.eventN}`)
+    .attr("font-size", "7px")
+    .attr("font-weight", "bold");
+  rows
+    .append("text")
+    .attr("x", left)
+    .attr("y", 35)
+    .attr("text-anchor", "end")
+    .text((d) => d.current_v)
+    .attr("font-size", "6px");
+
+  const line_scale = d3
+    .scaleLinear()
+    .domain([0, d3.max(new_data, (d) => Math.abs(d.difference))])
+    .range([20, 180]);
+
+  rows
+    .append("line")
+    .attr("x1", left + 10)
+    .attr("class", "line2 response-line")
+    .attr("x2", (d) => {
+      const l = line_scale(Math.abs(d.difference));
+      return left + l;
+    })
+    .attr("y1", 35)
+    .attr("y2", 35)
+    .attr("stroke", (d) =>
+      isSelectedRow(selectedGames, d) ? "#552503" : "black",
+    )
+    .attr("stroke-width", (d) => (isSelectedRow(selectedGames, d) ? 2 : 1))
+    .attr("stroke-dasharray", "5 3")
+    .on("mouseover", function (event, d) {
+      tooltip.style("visibility", "visible").html(tooltipInformations2(d));
+    })
+    .on("mousemove", function (event) {
+      tooltip
+        .style("left", event.clientX + 15 + "px")
+        .style("top", event.clientY - 20 + "px");
+    })
+    .on("mouseout", function () {
+      tooltip.style("visibility", "hidden");
+    });
+
+  rows
+    .append("circle")
+    .attr("class", "response-dot")
+    .attr("cx", left + 10)
+    .attr("cy", 35)
+    .attr("r", (d) => (isSelectedRow(selectedGames, d) ? 4 : 2))
+    .attr("fill", "#fdb927")
+    .attr("stroke", (d) => (isSelectedRow(selectedGames, d) ? "#000" : "none"));
+  rows
+    .append("circle")
+    .attr("class", "response-dot")
+    .attr("cx", (d) => {
+      const l = line_scale(Math.abs(d.difference));
+      return left + l;
+    })
+    .attr("cy", 35)
+    .attr("r", (d) => (isSelectedRow(selectedGames, d) ? 4 : 2))
+    .attr("fill", "#fdb927")
+    .attr("stroke", (d) => (isSelectedRow(selectedGames, d) ? "#000" : "none"));
+
+  rows
+    .append("text")
+    .attr("x", right)
+    .attr("y", 35)
+    .text((d) => d.next_v)
+    .attr("font-size", "6px");
+
+  rows
+    .append("text")
+    .attr("x", right + 50)
+    .attr("y", 35)
+    .text((d) => difference_label(d.difference))
+    .attr("font-size", "6px")
+    .attr("fill", "#552503")
+    .attr("font-weight", "bold");
 }
 
-function toolTip2(){
-    let tooltip = d3.select("body").select(".tooltip2")
-    if(tooltip.empty()){
-        tooltip = d3.select("body").append("div").attr("class","tooltip2")
-    }
-
-    return tooltip
+function isSelectedRow(selectedGames, row) {
+  if (
+    !selectedGames ||
+    !selectedGames.indexes ||
+    selectedGames.indexes.length === 0
+  )
+    return false;
+  if (selectedGames.pairStart !== null)
+    return selectedGames.pairStart === row.game_idx;
+  return (
+    selectedGames.indexes.includes(row.game_idx) ||
+    selectedGames.indexes.includes(row.nextg_index)
+  );
 }
 
-function tooltipInformations2(data){
+function difference_label(diff) {
+  if (diff > 1) return "increase";
+  if (diff < -1) return "decrease";
+  if (diff < 0) return "slightly decrease";
+  if (diff > 0) return "slightly increase";
+  return "stable";
+}
 
-    return `<strong> Game n - Date: ${data.current_g["game_date"]} </strong><br>
-            <strong> Game n - Opponent: ${data.current_g["opponent"]} </strong><br>
-            <strong> Game n - Points: ${data.current_g["pts"]} </strong><br>
-            <strong> Game n+1 - Date: ${data.next_g["game_date"]} </strong><br>
-            <strong> Game n+1 - Opponent: ${data.next_g["opponent"]} </strong><br>
-            <strong> Game n+1 - Points: ${data.next_g["pts"]} </strong><br>
-    `
+function performance_filter(d, data, metric) {
+  const bLine = d3.mean(data, (dt) => dt[metric]);
+  const th = Math.abs(bLine) * 0.2;
+  const dv = d[metric] - bLine;
+
+  if (dv > th) return "hot";
+  if (dv < -th) return "cold";
+  return "normal";
+}
+
+function addSummaryCard(svg, new_data, eventT, canvas) {
+  svg
+    .append("text")
+    .attr("x", 50)
+    .attr("y", canvas.height - 50)
+    .attr("font-weight", "bold")
+    .text(`Average change after ${eventT} games:`)
+    .attr("font-size", "7px");
+
+  const metrics_change = new_data.map((d) => {
+    const pts = d.current_g["next_pts"] - d.current_g["pts"];
+    const fga = d.current_g["next_fga"] - d.current_g["fga"];
+    const min = d.current_g["next_min"] - d.current_g["min"];
+    const fg_pct = d.current_g["next_fg_pct"] - d.current_g["fg_pct"];
+
+    return { pts: pts, fga: fga, min: min, fg_pct: fg_pct };
+  });
+
+  const means = [
+    { avg: d3.mean(metrics_change, (d) => d.pts), name: "PTS" },
+    { avg: d3.mean(metrics_change, (d) => d.fga), name: "FGA" },
+    { avg: d3.mean(metrics_change, (d) => d.min), name: "MIN" },
+    { avg: d3.mean(metrics_change, (d) => d.fg_pct), name: "FG%" },
+  ];
+
+  means.forEach((element, i) => {
+    let position = canvas.margin.left + i * 50;
+    svg
+      .append("text")
+      .attr("x", position)
+      .attr("y", canvas.height - 30)
+      .attr("font-size", "6px")
+      .attr("font-weight", "bold")
+      .text(`${element.name} : `);
+    svg
+      .append("text")
+      .attr("x", position + 20)
+      .attr("y", canvas.height - 30)
+      .attr("font-size", "6px")
+      .text(`${element.avg.toFixed(2)}`);
+  });
+}
+
+function toolTip2() {
+  let tooltip = d3.select("body").select(".tooltip2");
+  if (tooltip.empty()) {
+    tooltip = d3.select("body").append("div").attr("class", "tooltip2");
+  }
+
+  return tooltip;
+}
+
+function tooltipInformations2(data) {
+  return ` 	<strong> Game n - Date: </strong> ${data.current_g["game_date"]} <br>
+            <strong> Game n - Opponent: </strong> ${data.current_g["opponent"]} <br>
+            <strong> Game n - Points:</strong>${data.current_g["pts"]} <br>
+            <strong> Game n - Minutes:</strong> ${data.current_g["min"]} <br>
+            <strong> Game n - FGA: </strong>${data.current_g["fga"]} <br>
+            <strong> Game n - FG%:</strong> ${data.current_g["fg_pct"]} <br>
+            <strong> Game n - Plus-Minus:</strong> ${data.current_g["plus_minus"]} <br>
+            <hr>
+            <strong> Game n+1 - Date:</strong> ${data.next_g["game_date"]} <br>
+            <strong> Game n+1 - Opponent: </strong>${data.next_g["opponent"]} <br>
+            <strong> Game n+1 - Points: </strong>${data.next_g["pts"]}<br>
+            <strong> Game n+1 - Minutes:</strong> ${data.next_g["min"]} <br>
+            <strong> Game n+1 - FGA: </strong>${data.next_g["fga"]} <br>
+            <strong> Game n+1 - FG%:</strong> ${data.next_g["fg_pct"]} <br>
+            <strong> Game n+1 - Plus-Minus:</strong> ${data.next_g["plus_minus"]} <br>
+            `;
 }
